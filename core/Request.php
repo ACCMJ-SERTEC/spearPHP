@@ -57,19 +57,28 @@
             $string = preg_replace('/\s+/', ' ', trim($value));
             $string = strip_tags($string);
 
-            $patterns = [
-                '/<script\b[^>]*>(.*?)<\/script>/is',
-                '/SELECT\s+\*\s+FROM/i',
-                '/DELETE\s+FROM/i',
-                '/INSERT\s+INTO/i',
-                '/DROP\s+TABLE/i',
-                '/OR\s+\'1\'=\'1\'/i',
-                '/OR\s+\"1\"=\"1\"/i',
-                '/--/i',
-                '/\b(is NULL|LIKE|OR)\b/i',
-                '/\^|\[|\]|==/',
-            ];
-
-            return preg_replace($patterns, '', $string);
+            $reserved_words = [
+            'select', 'insert', 'update', 'delete', 'drop', 'create', 
+            'alter', 'table', 'where', 'from', 'into', 'join', 
+            'group', 'order', 'by', 'having', 'null', 'and', 'or'
+        ];
+    
+        $symbols = [
+            '=', "'", '"', '==', '--', ';', '/*', '*/', '&', '|', '<', '>', 
+            '%', '!', '(', ')', '{', '}', '[', ']', '^', ':', '<<', '>>', 
+            '\\', '/',' '
+        ];
+    
+        $escape_special_chars = function($symbol) {
+            return preg_quote($symbol, '/'); 
+        };
+    
+        $escaped_symbols = array_map($escape_special_chars, $symbols);
+    
+        $pattern = '/\b(' . implode('|', $reserved_words) . ')\b|(' . implode('|', $escaped_symbols) . ')/i';
+    
+        $input = preg_replace($pattern, '', $value);
+    
+        return $input;
         }
     }
