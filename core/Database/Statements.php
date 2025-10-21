@@ -234,4 +234,29 @@
         {
             return $this->connection;
         }
+
+        public function load_data2($file, $table){
+            // Validación de $file y $table (por ejemplo, solo permitir letras y números en el nombre de la tabla)
+            if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
+                return "El nombre de la tabla no es válido";
+            }
+            // Escapamos la ruta del archivo
+            //$file = escapeshellarg($file); // Aseguramos que la ruta sea segura
+            // Preparamos la consulta
+            $query = "LOAD DATA LOCAL INFILE {$file} INTO TABLE $table 
+            CHARACTER SET latin1 
+            FIELDS TERMINATED BY ',' ENCLOSED BY '\"' 
+            LINES TERMINATED BY '\\n' 
+            IGNORE 1 LINES;
+            ";
+            // Ejecutamos la consulta
+            try {
+                $loadData = $this->attach->prepare($query);
+                $insert = $loadData->execute();
+            } catch(PDOException $e) {
+                //error_log("Error en LOAD DATA LOCAL INFILE: " . $e->getMessage());
+                return false;
+            }
+            return $insert;
+        }
     }
